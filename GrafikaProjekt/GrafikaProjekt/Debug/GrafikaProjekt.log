@@ -1,1 +1,7 @@
-﻿  GrafikaProjekt.vcxproj -> D:\Dropbox\infa\Visual\GrafikaProjekt\Debug\GrafikaProjekt.exe
+﻿  stdafx.cpp
+  GrafikaProjekt.cpp
+d:\git\grafikakomputerowa\grafikaprojekt\grafikaprojekt\grafikaprojekt.cpp(85): warning C4018: '<': signed/unsigned mismatch
+d:\git\grafikakomputerowa\grafikaprojekt\grafikaprojekt\grafikaprojekt.cpp(149): warning C4018: '<': signed/unsigned mismatch
+  Generating Code...
+  GrafikaProjekt.vcxproj -> D:\Git\GrafikaKomputerowa\GrafikaProjekt\Debug\GrafikaProjekt.exe
+  GrafikaProjekt.vcxproj -> D:\Git\GrafikaKomputerowa\GrafikaProjekt\Debug\GrafikaProjekt.pdb (Full PDB)

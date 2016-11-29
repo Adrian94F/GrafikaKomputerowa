@@ -1,0 +1,11 @@
+﻿  GrafikaProjekt.cpp
+GrafikaProjekt.cpp(85): warning C4018: '<': signed/unsigned mismatch
+GrafikaProjekt.cpp(149): warning C4018: '<': signed/unsigned mismatch
+  stdafx.cpp
+  Generating code
+  0 of 423 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    29 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  GrafikaProjekt.vcxproj -> D:\Git\GrafikaKomputerowa\GrafikaProjekt\Release\GrafikaProjekt.exe
+  GrafikaProjekt.vcxproj -> D:\Git\GrafikaKomputerowa\GrafikaProjekt\Release\GrafikaProjekt.pdb (Full PDB)
