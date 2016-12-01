@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -Wall -pedantic -lm -lrt -lpthread -lglut -lGL -std=c++11
+CFLAGS =  -pedantic -lm -lrt -lpthread -lglut -lGL -std=c++11
 
 all: main
 

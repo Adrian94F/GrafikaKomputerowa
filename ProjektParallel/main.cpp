@@ -2,17 +2,26 @@
 //******					Adrian Frydmański						******//
 //******						209865								******//
 //************************************************************************//
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <stdio.h>
+#include <semaphore.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <pthread.h>
 #include <GL/glut.h>
-#include <GL/gl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include <signal.h>
 #include <iostream>
+#include <GL/gl.h>
 #include <fstream>
+#include <stdio.h>
+#include <time.h>
 #include <vector>
 #include <string>
+#include <math.h>
+#include <ctime>
 using namespace std;
 
 //*************************************************************************/
@@ -30,7 +39,6 @@ struct sphere : public something							// sfera
 	float specularshininess;
 };
 struct source : public something {};						// źródło światła
-
 //*************************************************************************/
 // Zmienne globalne
 typedef float point[3];										// wektor 3 liczb
@@ -54,6 +62,18 @@ GLubyte pixel[1][1][3];
 vector <sphere> spheres;									// sfery
 vector <source> sources;									// źródła światła
 int displayMode = 1;										// tryb wyświetlania (1 - bez zmiany proporcji, 2 - dopasowanie)
+
+//*************************************************************************/
+// pamięć współdzielona
+typedef struct
+{
+	vector <vector <vector <float>>> image;
+	sem_t waitForData; 										// semafor dla dzieci, by czekały na dane
+	sem_t waitForRender;									// semafor dla Display(), by czekał na obliczenia dzieci
+} shmstruct;
+shmstruct *data;
+key_t key;
+int shmd;
 
 //*************************************************************************/
 // Funkcja przeprowadza normalizację wektora
@@ -236,6 +256,7 @@ int Trace(float *p, float *v, int step)
 // Funkcja rysująca obraz oświetlonej sceny
 void Display(void)
 {
+	double t0 = clock();
 	int  x, y;							// pozycja rysowanego piksela "całkowitoliczbowa"
 	float x_fl, y_fl;					// pozycja rysowanego piksela "zmiennoprzecinkowa"
 	int im_size_x_2 = glutGet(GLUT_WINDOW_WIDTH) / 2;	// połowa rozmiaru obrazu w pikselach
@@ -284,9 +305,11 @@ void Display(void)
 			// inkrementacja pozycji rastrowej dla rysowania piksela
 			glDrawPixels(1, 1, GL_RGB, GL_UNSIGNED_BYTE, pixel);
 			// Narysowanie kolejnego piksela na ekranie
+			glFlush();
 		}
 	}
-	glFlush();
+	double t1 = (clock() - t0) / (double)CLOCKS_PER_SEC;
+	cout << "Drawing time: " << t1 << " s" << endl;
 }
 
 //*************************************************************************/
@@ -486,18 +509,51 @@ void pobierzDane(string name)
 }
 
 //*************************************************************************/
-// Główna funkcja
-int main(int argc, char **argv)
+// Inicjalizacja
+void init()
 {
 	setlocale(LC_ALL, "");
 	pobierzDane("");
-	glutInit(&argc, argv);
-	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
-	glutInitWindowSize(im_size_x, im_size_y);
-	glutCreateWindow("Ray Tracing - 209865");
-	glutDisplayFunc(Display);
-	glutKeyboardFunc(Keys);
-	glutReshapeFunc(ChangeSize);
-	glutMainLoop();
-	return 0;
+	// pamięć współdzielona
+	key = ftok("mem", 0);
+	shmd = shmget(key, sizeof(shmstruct), 0777 | IPC_CREAT);
+	data = (shmstruct*)shmat(shmd, (shmstruct*)0, 0);
+	if (data == NULL)
+		perror("shmat");
+	// obraz
+	for (int i = 0; i < im_size_x; i++)
+	{
+		vector <vector <float>> v;
+		for (int j = 0; j < im_size_y; j++)
+		{
+			vector <float> p;
+			for (int k = 0; k < 3; k++)
+				p.push_back(0.0);
+			v.push_back(p);
+		}
+		data->image.push_back(v);
+	}
+
+
+}
+
+//*************************************************************************/
+// Główna funkcja
+int main(int argc, char **argv)
+{
+	if (argc > 1)
+	{
+		init();
+		int argc2 = argc--;
+		glutInit(&argc2, argv);
+		glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
+		glutInitWindowSize(im_size_x, im_size_y);
+		glutCreateWindow("Ray Tracing - 209865");
+		glutDisplayFunc(Display);
+		glutKeyboardFunc(Keys);
+		glutReshapeFunc(ChangeSize);
+		glutMainLoop();
+		return 0;
+	}
+	return 1;
 }
