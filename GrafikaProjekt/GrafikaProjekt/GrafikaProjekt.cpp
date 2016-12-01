@@ -247,7 +247,7 @@ void Display(void)
 			starting_point[1] = y_fl;
 			starting_point[2] = viewport_size;
 			// wyznaczenie początku śledzonego promienia dla rysowanego piksela
-			kon[0] = 0.0; kon[1] = 0.0; kon[2] = 0.0;
+			kon[0] = kon[1] = kon[2] = 0.0;
 			Trace(starting_point, starting_directions, 1);
 			if (kon[0] == 0.0) kon[0] = background[0];
 			if (kon[1] == 0.0) kon[1] = background[1];
