@@ -53,12 +53,20 @@ int init(int x, int y)
 
 void child(int x0, int x1, int y0, int y1, int id)							// Zapis do pamięci współdzielonej
 {
-	cout << "Child" << endl;
 	while(true)
 	{
+		cout << " Child " << id << " is waiting..." << endl;
 		sem_wait(&(data->waitForData));
-		cout << " Child " << id << " is rendering..." << endl;
-		sleep(2);
+		cout << " Child " << id << " is rendering from (" << x0 << "," << y0 << ") to (" << x1 << "," << y1 << ")" << endl;
+		for (int x = x0; x <= x1; x++)
+		{
+			cout << " *" << endl;
+			for (int y = y0; y <= y1; y++)
+			{
+				cout << "  *" << endl;
+				image[x][y][0] = id;
+			}
+		}
 		cout << " Child " << id << " rendered image..." << endl;
 		sem_post(&(data->waitForRender));
 	}
@@ -66,12 +74,14 @@ void child(int x0, int x1, int y0, int y1, int id)							// Zapis do pamięci ws
 
 int main()								// Funkcja główna
 {
-	if (init(20, 20) == -1)				// Inicjalizacja
+	int sizex = 20;
+	int sizey = 20;
+	if (init(sizex, sizey) == -1)				// Inicjalizacja
 		return -1;
 	int x0 = 0;
-	int x1 = 0;
+	int x1 = sizex / nOfChildren;
 	int y0 = 0;
-	int y1 = 0;
+	int y1 = sizey;
 	for (int i = 0; i < nOfChildren; i++)
 	{
 		pid[i] = fork();
@@ -83,6 +93,10 @@ int main()								// Funkcja główna
 				child(x0, x1, y0, y1, i);
 				break;
 		}
+		x0 = x1;
+		x1 += sizex / nOfChildren;
+		if (i == nOfChildren - 1)
+			x1 = sizex;
 
 	}
 	cout << "Parent" << endl;
@@ -94,6 +108,14 @@ int main()								// Funkcja główna
 		for (int i = 0; i < nOfChildren; i++)
 			sem_wait(&(data->waitForRender));	// czekanie na render
 		cout << "Got data, displaying" << endl;
+		for (int y = y0; y <= y1; y++)
+		{
+			for (int x = x0; x <= x1; x++)
+			{
+				cout << image[x][y][0] << " ";
+			}
+			cout << endl;
+		}
 		sleep(10);
 	}
 	// usunięcie pamięci współdzielonej
